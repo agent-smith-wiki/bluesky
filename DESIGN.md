@@ -43,6 +43,10 @@ reply_to: <slug|at://…>   # thread under another post: a same-repo slug, or a
 - The composed text is capped at **300 graphemes** (the AT Protocol limit);
   `publish/richmessage.py` truncates on a paragraph boundary, keeping the
   link intact, when the body would push it over.
+- **Link card**: with no `image:`, the first URL in the post text (or `link:`)
+  becomes an `app.bsky.embed.external` card — OpenGraph title/description/thumb
+  when the page exposes them, the domain as title otherwise. `image:` takes
+  precedence: a post shows either an image or a link card, never both.
 - `reply_to:` threads this post under an earlier one. A same-repo **slug** threads
   under that post (the parent must already be published — see "Deferred replies");
   a full **`at://…` URI** threads under a post in another account/repo directly —
