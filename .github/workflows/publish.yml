@@ -1,0 +1,37 @@
+name: Publish to Bluesky
+
+# On push of any post, publish the ones whose sibling state file doesn't exist
+# (oldest-first). publish.py itself CLAIMS each post by writing
+# posts/<slug>.state.json and pushing BEFORE sending, so a crash can only drop
+# a post, never duplicate it. `[skip ci]` on those commits avoids re-triggering
+# this workflow.
+on:
+  push:
+    branches: [main]
+    paths: ['posts/**']
+  workflow_dispatch: {}
+
+permissions:
+  contents: write            # publish.py commits + pushes state.json
+
+concurrency: bluesky-publish   # never two publishers at once
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4   # persist-credentials: true -> git push works
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'    # stdlib only -- no pip install
+
+      - name: Configure git identity
+        run: |
+          git config user.name  "bluesky-publisher"
+          git config user.email "bot@users.noreply.github.com"
+
+      - name: Publish new posts (claim-then-send)
+        env:
+          BLUESKY_HANDLE: ${{ vars.BLUESKY_HANDLE || secrets.BLUESKY_HANDLE }}
+          BLUESKY_APP_PASSWORD: ${{ secrets.BLUESKY_APP_PASSWORD }}
+        run: python publish/publish.py
