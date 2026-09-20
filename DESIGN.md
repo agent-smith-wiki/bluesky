@@ -29,8 +29,8 @@ link: https://...        # outbound URL: appended on its own line and faceted
                           # as a clickable link (optional)
 image: https://...       # final image URL, fetched + uploaded verbatim as a
                           # blob embed (optional)
-reply_to: <slug>          # slug of another posts/*.md in THIS repo; threads
-                          # this post as a reply to it (optional)
+reply_to: <slug|at://…>   # thread under another post: a same-repo slug, or a
+                          # full at:// URI for a post in another account (optional)
 ---
 <body text>               # the post text (plain text, no Markdown syntax --
                            # Bluesky has no rich-block renderer like Telegram)
@@ -43,8 +43,10 @@ reply_to: <slug>          # slug of another posts/*.md in THIS repo; threads
 - The composed text is capped at **300 graphemes** (the AT Protocol limit);
   `publish/richmessage.py` truncates on a paragraph boundary, keeping the
   link intact, when the body would push it over.
-- `reply_to:` threads this post under an earlier one *in this same repo*.
-  The parent must already be published — see "Deferred replies" below.
+- `reply_to:` threads this post under an earlier one. A same-repo **slug** threads
+  under that post (the parent must already be published — see "Deferred replies");
+  a full **`at://…` URI** threads under a post in another account/repo directly —
+  this is the dual-identity mirror (the agent replying to the operator's post).
 
 ## CI flow (`.github/workflows/publish.yml`)
 `on: push` (main, `posts/**`) → `python publish/publish.py`. For each

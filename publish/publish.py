@@ -180,17 +180,20 @@ def main(argv: list[str] | None = None, root: str = ".") -> int:
         text, facets = rendered["text"], rendered["facets"]
 
         reply_to_uri = None
-        reply_to_slug = fm.get("reply_to") or None
-        if reply_to_slug:
-            parent_state = load_state(reply_to_slug, root)
-            if not parent_state or "uri" not in parent_state:
-                print(f"deferred {slug}: reply_to {reply_to_slug!r} not published yet")
-                continue
-            reply_to_uri = parent_state["uri"]
+        reply_to_ref = fm.get("reply_to") or None
+        if reply_to_ref:
+            if reply_to_ref.startswith("at://"):
+                reply_to_uri = reply_to_ref            # cross-account: a raw AT-URI threads directly
+            else:
+                parent_state = load_state(reply_to_ref, root)   # same-repo: resolve a sibling slug
+                if not parent_state or "uri" not in parent_state:
+                    print(f"deferred {slug}: reply_to {reply_to_ref!r} not published yet")
+                    continue
+                reply_to_uri = parent_state["uri"]
 
         if session is None:
             n = richmessage.grapheme_len(text)
-            note = f", reply to {reply_to_slug}" if reply_to_slug else ""
+            note = f", reply to {reply_to_ref}" if reply_to_ref else ""
             print(f"[dry-run] would post {slug}: {n} graphemes{note}")
             continue
 
