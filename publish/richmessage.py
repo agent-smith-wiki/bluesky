@@ -123,6 +123,15 @@ def link_facet(text: str, link: str) -> dict | None:
     }
 
 
+_URL_RE = re.compile(r'https?://[^\s<>()\[\]"\']+')
+
+
+def first_url(text: str) -> str | None:
+    """The first http(s) URL in `text` (trailing punctuation trimmed), or None."""
+    m = _URL_RE.search(text or "")
+    return m.group(0).rstrip('.,);:]') if m else None
+
+
 def build(body: str, link: str | None = None, max_graphemes: int = MAX_GRAPHEMES) -> dict:
     """Compose the final post text: `body`, plus `link` appended on its own
     line when given and not already present in the body. Truncates the body
